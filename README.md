@@ -2,9 +2,15 @@
 
 This repository provides a Circular Buffer implementation for MATLAB using a MEX function for efficient data handling. The package is designed to be added as a submodule to your projects and can be used to interact with the Circular Buffer through calls like `buf.CircleBufferMex(...)`.
 
-## Repository
+## Quick Reference ##
+| Method Name | Description | Syntax |
+|-------------|-------------|--------|
+| [create](#create-a-buffer) | Creates a buffer with specified channels and size, initializing with zeros. | `buf.CircleBufferMex('create', 'bufferName', numChannels, bufferSize);` |
+| [clear](#clear-a-buffer) | Clears a buffer and frees its memory. | `buf.CircleBufferMex('clear', 'bufferName');` |
+| [add](#add-data-to-the-buffer) | Adds data to the buffer. | `buf.CircleBufferMex('add', 'bufferName', data);` |
+| [get](#retrieve-data-from-a-channel) | Retrieves specific data from a channel starting at a given sample. | `buf.CircleBufferMex('get', 'bufferName', numSamples, channel, startSample);` |
+| [getMostRecent](#retrieve-the-most-recent-samples) | Retrieves the most recent samples from the buffer. | `buf.CircleBufferMex('getMostRecent', 'bufferName', numSamples);` |
 
-The repository is located at [https://github.com/Neuro-Mechatronics-Interfaces/matlab_package__circle_buffer](https://github.com/Neuro-Mechatronics-Interfaces/matlab_package__circle_buffer).
 
 ## Installation
 You'll want to add this as a submodule to your project as the `+buf` package, as shown below.
@@ -49,12 +55,19 @@ numSamples = 100;
 retrievedData = buf.CircleBufferMex('getMostRecent', 'buffer1', numSamples);
 ```
 
+### Retrieve Data from a Channel ###
 To retrieve specific data from a channel:  
 
 ```matlab
 channel = 1;
 startSample = 0;
 retrievedData = buf.CircleBufferMex('get', 'buffer1', numSamples, channel, startSample);
+```
+
+### Clearing the Buffer ###  
+To clear a specific named buffer:  
+```matlab
+buf.CircleBufferMex('clear', 'buffer1');
 ```
 
 ## Example ##

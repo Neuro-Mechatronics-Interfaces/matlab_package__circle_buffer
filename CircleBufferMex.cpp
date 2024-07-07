@@ -7,13 +7,13 @@ std::map<std::string, CircularBuffer*> bufferMap;
 
 void createBuffer(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (nrhs != 3) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:createBuffer", "Three input arguments required: buffer name, number of channels, and buffer size.");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:createBuffer", "Three input arguments required: buffer name, number of channels, and buffer size.");
     }
     if (!mxIsChar(prhs[0])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:createBuffer", "First input argument must be a string (buffer name).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:createBuffer", "First input argument must be a string (buffer name).");
     }
     if (!mxIsScalar(prhs[1]) || !mxIsScalar(prhs[2])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:createBuffer", "Second and third input arguments must be scalars (number of channels and buffer size).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:createBuffer", "Second and third input arguments must be scalars (number of channels and buffer size).");
     }
     
     char bufferName[128];
@@ -24,22 +24,42 @@ void createBuffer(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     bufferMap[bufferName] = new CircularBuffer(numChannels, bufferSize);
 }
 
-void addData(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-    if (nrhs != 2) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:addData", "Two input arguments required: buffer name and data array.");
+void clearBuffer(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+    if (nrhs != 1) {
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:clearBuffer", "One input argument required: buffer name.");
     }
     if (!mxIsChar(prhs[0])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:addData", "First input argument must be a string (buffer name).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:clearBuffer", "First input argument must be a string (buffer name).");
+    }
+
+    char bufferName[128];
+    mxGetString(prhs[0], bufferName, sizeof(bufferName));
+
+    auto it = bufferMap.find(bufferName);
+    if (it != bufferMap.end()) {
+        delete it->second;
+        bufferMap.erase(it);
+    } else {
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:clearBuffer", "Buffer not found: %s", bufferName);
+    }
+}
+
+void addData(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+    if (nrhs != 2) {
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:addData", "Two input arguments required: buffer name and data array.");
+    }
+    if (!mxIsChar(prhs[0])) {
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:addData", "First input argument must be a string (buffer name).");
     }
     if (!mxIsSingle(prhs[1])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:addData", "Second input argument must be an array of singles (data).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:addData", "Second input argument must be an array of singles (data).");
     }
     
     char bufferName[128];
     mxGetString(prhs[0], bufferName, sizeof(bufferName));
     
     if (bufferMap.find(bufferName) == bufferMap.end()) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:addData", "Buffer not found: %s", bufferName);
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:addData", "Buffer not found: %s", bufferName);
     }
     
     CircularBuffer* buffer = bufferMap[bufferName];
@@ -51,20 +71,20 @@ void addData(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 void getData(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (nrhs != 4) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getData", "Four input arguments required: buffer name, number of samples, channel index, and start sample.");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getData", "Four input arguments required: buffer name, number of samples, channel index, and start sample.");
     }
     if (!mxIsChar(prhs[0])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getData", "First input argument must be a string (buffer name).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getData", "First input argument must be a string (buffer name).");
     }
     if (!mxIsScalar(prhs[1]) || !mxIsScalar(prhs[2]) || !mxIsScalar(prhs[3])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getData", "Second, third, and fourth input arguments must be scalars (number of samples, channel index, and start sample).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getData", "Second, third, and fourth input arguments must be scalars (number of samples, channel index, and start sample).");
     }
     
     char bufferName[128];
     mxGetString(prhs[0], bufferName, sizeof(bufferName));
     
     if (bufferMap.find(bufferName) == bufferMap.end()) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getData", "Buffer not found: %s", bufferName);
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getData", "Buffer not found: %s", bufferName);
     }
     
     CircularBuffer* buffer = bufferMap[bufferName];
@@ -80,20 +100,20 @@ void getData(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 void getMostRecentData(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (nrhs != 2) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getMostRecentData", "Two input arguments required: buffer name and number of samples.");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getMostRecentData", "Two input arguments required: buffer name and number of samples.");
     }
     if (!mxIsChar(prhs[0])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getMostRecentData", "First input argument must be a string (buffer name).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getMostRecentData", "First input argument must be a string (buffer name).");
     }
     if (!mxIsScalar(prhs[1])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getMostRecentData", "Second input argument must be a scalar (number of samples).");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getMostRecentData", "Second input argument must be a scalar (number of samples).");
     }
     
     char bufferName[128];
     mxGetString(prhs[0], bufferName, sizeof(bufferName));
     
     if (bufferMap.find(bufferName) == bufferMap.end()) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:getMostRecentData", "Buffer not found: %s", bufferName);
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:getMostRecentData", "Buffer not found: %s", bufferName);
     }
     
     CircularBuffer* buffer = bufferMap[bufferName];
@@ -107,7 +127,7 @@ void getMostRecentData(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (nrhs < 1 || !mxIsChar(prhs[0])) {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:invalidInput", "First input should be a command string.");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:invalidInput", "First input should be a command string.");
     }
     
     char command[64];
@@ -115,6 +135,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     
     if (strcmp(command, "create") == 0) {
         createBuffer(nlhs, plhs, nrhs - 1, prhs + 1);
+    } else if (strcmp(command, "clear") == 0) {
+        clearBuffer(nlhs, plhs, nrhs - 1, prhs + 1);
     } else if (strcmp(command, "add") == 0) {
         addData(nlhs, plhs, nrhs - 1, prhs + 1);
     } else if (strcmp(command, "get") == 0) {
@@ -122,6 +144,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     } else if (strcmp(command, "getMostRecent") == 0) {
         getMostRecentData(nlhs, plhs, nrhs - 1, prhs + 1);
     } else {
-        mexErrMsgIdAndTxt("MATLAB:mexCircularBuffer:unknownCommand", "Unknown command.");
+        mexErrMsgIdAndTxt("MATLAB:CircleBufferMex:unknownCommand", "Unknown command.");
     }
 }

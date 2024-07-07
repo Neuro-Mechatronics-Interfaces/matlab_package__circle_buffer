@@ -4,7 +4,7 @@
 
 CircularBuffer::CircularBuffer(size_t numChannels, size_t bufferSize)
     : bufferSize(bufferSize), numChannels(numChannels), head(0), tail(0), isFull(false) {
-    buffer.resize(numChannels, std::vector<float>(bufferSize, 0.0f));
+    buffer.resize(numChannels, std::vector<float>(bufferSize, 0.0f));  // Initialize with zeros
 }
 
 CircularBuffer::~CircularBuffer() {
